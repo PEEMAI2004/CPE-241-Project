@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Add PlantType</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, button { padding: 8px; margin-top: 5px; width: 100%; max-width: 300px; }
+  </style>
+</head>
+<body>
+
+  <h2>Add PlantType</h2>
+
+  <form id="plantTypeForm" data-endpoint="planttype">
+    <label>Plant ID: <input type="number" name="plant_id" required></label>
+    <label>Plant Name: <input type="text" name="plant_name" required></label>
+    <label>Anti Oxidant: <input type="text" name="anti_oxidant" required></label>
+    <label>Pollen: <input type="text" name="pollen" required></label>
+    <label>Plant Description: <input type="text" name="plant_description" required></label>
+    <label>Flowering Season: <input type="text" name="flowering_season" required></label>
+    <label>Climate Zone: <input type="text" name="climatezone" required></label>
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="result"></p>
+
+  <script src="api.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Add Beekeeper</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select, button { padding: 8px; margin-top: 5px; width: 100%; max-width: 300px; }
+  </style>
+</head>
+<body>
+
+  <h2>Add Beekeeper</h2>
+
+  <form id="beekeeperForm" data-endpoint="beekeeper">
+    <label>Beekeeper ID: <input type="number" name="beekeeper_id" required></label>
+    <label>Name: <input type="text" name="beekeeper_name" required></label>
+    <label>Age: <input type="number" name="   " required></label>
+    <label>Email: <input type="email" name="email" required></label>
+    <label>Phone: <input type="text" name="phone" required></label>
+    <label>Land Area (sq.m): <input type="number" step="0.01" name="land_area" required></label>
+    
+    <label>Location:
+      <select name="location_id" id="locationDropdown" required>
+        <option value="">Loading...</option>
+      </select>
+    </label>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="result"></p>
+
+  <script src="api.js"></script>
+</body>
+</html>

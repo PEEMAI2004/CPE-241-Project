@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Add Geolocation</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, button { padding: 8px; margin-top: 5px; width: 100%; max-width: 300px; }
+  </style>
+</head>
+<body>
+
+  <h2>Add GeoLocation</h2>
+
+  <form id="geoForm" data-endpoint="geolocation">
+    <label>Location ID: <input type="number" name="location_id" required></label>
+    <label>Province Name: <input type="text" name="province_name" required></label>
+    <label>District Name: <input type="text" name="district_name" required></label>
+    <label>Latitude: <input type="number" step="any" name="latitude" required></label>
+    <label>Longitude: <input type="number" step="any" name="longitude" required></label>
+    <label>Location Name: <input type="text" name="location_name" required></label>
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="result"></p>
+
+  <script src="api.js"></script>
+</body>
+</html>

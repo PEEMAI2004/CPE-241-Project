@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Add BeeHive</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select, button { padding: 8px; margin-top: 5px; width: 100%; max-width: 300px; }
+  </style>
+</head>
+<body>
+
+  <h2>Add BeeHive</h2>
+
+  <form id="beeHiveForm" data-endpoint="beehive">
+    <label>BeeHive ID: <input type="number" name="beehive_id" required></label>
+    <label>BeeHive Number: <input type="text" name="beehive_number" required></label>
+    <label>BeeHive Status: <input type="text" name="beehive_status" required></label>
+    <label>BeeHive Start Date: <input type="date" name="beehivestartdate" required></label>
+    <label>BeeHive Description: <input type="text" name="beehive_description" required></label>
+
+    <label>Plant:
+      <select name="plant_id" id="plantDropdown" required>
+        <option value="">Loading...</option>
+      </select>
+    </label>
+
+    <label>BeeType:
+      <select name="beetype_id" id="beetypeDropdown" required>
+        <option value="">Loading...</option>
+      </select>
+    </label>
+
+    <label>BeeKeeper:
+      <select name="beekeeper_id" id="beekeeperDropdown" required>
+        <option value="">Loading...</option>
+      </select>
+    </label>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="result"></p>
+
+  <script src="api.js"></script>
+</body>
+</html>
