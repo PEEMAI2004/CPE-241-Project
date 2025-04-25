@@ -24,7 +24,7 @@ func NewHarvestLogHandler(postgrestURL, jwtToken string) *HarvestLogHandler {
 // PrintHarvestLog prints a harvest log to stdout for debugging
 func (h *HarvestLogHandler) PrintHarvestLog(log *models.HarvestLog) {
 	fmt.Println("Received Harvest Log:")
-	fmt.Printf("  Harvest ID: %s\n", log.HarvestID)
+	// fmt.Printf("  Harvest ID: %s\n", log.HarvestID)
 	fmt.Printf("  BeeHive ID: %s\n", log.BeeHiveID)
 	fmt.Printf("  Harvest Date: %s\n", log.HarvestDate)
 	fmt.Printf("  Production: %d %s\n", log.Production, log.Unit)
@@ -63,12 +63,24 @@ func (h *HarvestLogHandler) TurnHarvest2Stock(log *models.HarvestLog, portion fl
 
 // CreateHoneyStock creates a HoneyStock object from a HarvestLog
 func (h *HarvestLogHandler) CreateHoneyStock(log *models.HarvestLog, quantity float64) *models.HoneyStock {
+	// Get the latest primary key from the harvest table
+	latestPK, err := h.postgrestService.GetLatestPrimaryKey("/harvestlog", "harvest_id")
+	if err != nil {
+		fmt.Println("Error getting latest primary key:", err)
+		return nil
+	}
+	HarvestID, ok := latestPK.(float64)
+	if !ok {
+		fmt.Println("Error converting latest primary key to int")
+		return nil
+	}
+
 	return &models.HoneyStock{
 		// StockID:   0, // This will be set by the database
 		BeeHiveID: log.BeeHiveID,
 		Quantity:  float64(quantity),
 		Unit:      log.Unit,
-		HarvestID: log.HarvestID,
+		HarvestID: int(HarvestID),
 		StockDate: log.HarvestDate,
 	}
 }
