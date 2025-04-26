@@ -11,7 +11,8 @@ function parseTypes(data) {
     } else if (
       key === "latitude" ||
       key === "longitude" ||
-      key === "land_area"
+      key === "land_area" ||
+      key === "production"
     ) {
       parsed[key] = parseFloat(value);
     } else {
@@ -27,8 +28,15 @@ async function submitForm(form) {
   const endpoint = form.dataset.endpoint;
   const resultDisplay = document.getElementById("result");
 
+  // if endpoint is harvestlog
+  if (endpoint === "harvestlog") {
+    submitAPI = "http://localhost:8080/api"
+  } else {
+    submitAPI = apiBase
+  }
+
   try {
-    const res = await fetch(`${apiBase}/${endpoint}`, {
+    const res = await fetch(`${submitAPI}/${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
