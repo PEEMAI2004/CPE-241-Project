@@ -15,10 +15,11 @@
 
   <form id="beekeeperForm" data-endpoint="beekeeper">
 
-    <label>Name: <input type="text" name="beekeeper_name" required></label>
-    <label>Age: <input type="number" name="beekeeper_age" required></label>
-    <label>Email: <input type="email" name="email" required></label>
-    <label>Phone: <input type="text" name="phone" required></label>
+    <label>User ID:
+      <select name="user_id" id="user_idDropdown" required>
+        <option value="">Loading...</option>
+      </select>
+    </label>
     <label>Land Area (sq.m): <input type="number" step="0.01" name="land_area" required></label>
     
     <label>Location:

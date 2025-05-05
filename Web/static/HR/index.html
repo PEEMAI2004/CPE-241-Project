@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Bee Data System</title>
+  <style>
+    body { font-family: sans-serif; padding: 40px; max-width: 600px; margin: auto; }
+    h1 { text-align: center; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 15px 0; }
+    a {
+      display: block;
+      padding: 10px;
+      background-color: #f2f2f2;
+      text-decoration: none;
+      color: #333;
+      border-radius: 5px;
+      transition: background 0.2s;
+    }
+    a:hover { background-color: #dcdcdc; }
+  </style>
+</head>
+<body>
+  <h1>Bee Data Entry System</h1>
+  <ul>
+    <li><a href="beekeeper.html">Insert BeeKeeper</a></li>
+    <li><a href="user.html">Insert Web User</a></li>
+    <li><a href="role.html">Insert Web Role</a></li>
+  </ul>
+</body>
+</html>
+
+<script>
+  // Check authentication and authorization
+  document.addEventListener('DOMContentLoaded', function() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+          window.location.href = '/';
+          return;
+      }
+      
+      // Verify token and role
+      fetch('/verify-token', {
+          method: 'GET',
+          headers: {
+              'Authorization': `Bearer ${token}`
+          }
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Invalid token');
+          }
+          return response.json();
+      })
+      .then(data => {
+          const roleId = data.role_id;
+          // Check if user has appropriate permissions
+          if (
+              // This is Farm/index.html
+              (window.location.pathname.includes('/Farm/') && !(roleId === 1 || roleId === 2)) ||
+              // This is HR/index.html
+              (window.location.pathname.includes('/HR/') && !(roleId === 1 || roleId === 3)) ||
+              // This is Shop/index.html
+              (window.location.pathname.includes('/Shop/') && !(roleId === 1 || roleId === 4))
+          ) {
+              alert('You do not have permission to access this page');
+              window.location.href = '/app';
+          }
+      })
+      .catch(error => {
+          console.error('Authentication error:', error);
+          localStorage.removeItem('token');
+          window.location.href = '/';
+      });
+  });
+</script>

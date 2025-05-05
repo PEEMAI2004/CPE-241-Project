@@ -30,7 +30,7 @@ async function submitForm(form) {
 
   // if endpoint is harvestlog
   if (endpoint === "harvestlog") {
-    submitAPI = "http://localhost:8080/api"
+    submitAPI = "https://api.kaminjitt.com/api"
   } else {
     submitAPI = apiBase
   }
@@ -97,7 +97,14 @@ document.addEventListener("DOMContentLoaded", () => {
       submitForm(form);
     });
   }
-
+// Add event listeners for the Role form and load dropdowns
+function setupRoleForm() {
+  document
+    .getElementById("roleForm")
+    ?.addEventListener("submit", (e) =>
+      handleFormSubmit(e, "roleForm", "webrole")
+    );
+}
   loadDropdown(
     "geolocation",
     "locationDropdown",

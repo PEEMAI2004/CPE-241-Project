@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Add Web User</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select, button { padding: 8px; margin-top: 5px; width: 100%; max-width: 300px; }
+  </style>
+</head>
+<body>
+
+  <h2>Add Web User</h2>
+
+  <form id="roleForm" data-endpoint="webrole">
+
+    <label>Role Name: <input type="text" name="role_name" required></label>
+    <label>Role Description: <input type="text" name="role_description" required></label>
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="result"></p>
+
+  <script src="api.js"></script>
+</body>
+</html>
