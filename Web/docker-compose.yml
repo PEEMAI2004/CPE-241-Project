@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  web:
-    image: nginx:alpine
-    container_name: simple-web
+  go-api:
+    build:
+      context: .
     ports:
-      - "8080:80"
-    volumes:
-      - ./:/usr/share/nginx/html:ro
+      - "6000:6000"
+    environment:
+      - PORT=6000
     restart: unless-stopped

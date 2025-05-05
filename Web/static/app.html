@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="app-container">
+            <header>
+                <h1>Dashboard</h1>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </header>
+            
+            <div class="user-info">
+                <h2>Welcome <span id="user-email">Loading...</span></h2>
+                <p>Role ID: <span id="user-role">Loading...</span></p>
+            </div>
+            
+            <div class="content">
+                <h3>Main Content</h3>
+                <p>This is the protected area of the application. Only logged in users can see this content.</p>
+            </div>
+            <div class="role-navigation">
+                <div id="all-access" style="display:none;">
+                    <h3>Administration Access</h3>
+                    <a href="/static/Farm/index.html" class="nav-btn farm-btn">Farm Management</a>
+                    <a href="/static/HR/index.html" class="nav-btn hr-btn">HR Management</a>
+                    <a href="/static/Shop/index.html" class="nav-btn shop-btn">Shop Management</a>
+                </div>
+                <div id="farm-access" style="display:none;">
+                    <h3>Farm Access</h3>
+                    <a href="/static/Farm/index.html" class="nav-btn farm-btn">Farm Management</a>
+                </div>
+                <div id="hr-access" style="display:none;">
+                    <h3>HR Access</h3>
+                    <a href="/static/HR/index.html" class="nav-btn hr-btn">HR Management</a>
+                </div>
+                <div id="shop-access" style="display:none;">
+                    <h3>Shop Access</h3>
+                    <a href="/static/Shop/index.html" class="nav-btn shop-btn">Shop Management</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Immediately check for token in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+        console.log("Token found in URL, saving to localStorage");
+        localStorage.setItem('token', token);
+        window.history.replaceState({}, document.title, "/app");
+    }
+    
+    // Main app functionality
+    window.addEventListener('DOMContentLoaded', () => {
+        const storedToken = localStorage.getItem('token');
+        
+        // If no token, redirect to login page
+        if (!storedToken) {
+            console.log("No token found, redirecting to login");
+            window.location.href = '/';
+            return;
+        }
+        
+        console.log("Verifying token with backend");
+        
+        // Verify token with backend
+        fetch('/verify-token', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${storedToken}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Invalid token');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Token verified, user data:", data);
+            // Display user information
+            document.getElementById('user-email').textContent = data.email;
+            document.getElementById('user-role').textContent = data.role_id;
+            
+            // Handle role-based access
+            const roleId = data.role_id;
+            
+            // Show appropriate navigation based on role
+            if (roleId === 1) {
+                // Admin - show all buttons
+                document.getElementById('all-access').style.display = 'block';
+            } else if (roleId === 2) {
+                // Farm role
+                document.getElementById('farm-access').style.display = 'block';
+            } else if (roleId === 3) {
+                // HR role
+                document.getElementById('hr-access').style.display = 'block';
+            } else if (roleId === 4) {
+                // Shop role
+                document.getElementById('shop-access').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Token verification error:', error);
+            // Clear token and redirect to login
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
+
+        
+        
+        // Set up logout functionality
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
+    });
+    </script>
+</body>
+</html>
