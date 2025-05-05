@@ -125,10 +125,10 @@ function setupBeeHiveForm() {
   loadDropdown("planttype", "plantDropdown", "plant_id", "plant_name");
   loadDropdown("beetype", "beetypeDropdown", "beetype_id", "beetype_name");
   loadDropdown(
-    "beekeeper",
+    "beekeeper_with_name",
     "beekeeperDropdown",
     "beekeeper_id",
-    "beekeeper_name"
+    "name"
   );
 }
 
