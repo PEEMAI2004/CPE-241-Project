@@ -88,13 +88,15 @@ func main() {
 	r.HandleFunc("/auth/google/callback", handleGoogleCallback)
 	r.HandleFunc("/verify-token", verifyTokenHandler)
 
+	// API routes with role-based authentication
 	r.HandleFunc("/api/farm/beehives", AuthMiddleware(handleFarmBeehives, 1, 2))  // Admin and Farm roles
 	r.HandleFunc("/api/hr/users", AuthMiddleware(handleHRUsers, 1, 3))           // Admin and HR roles  
 	r.HandleFunc("/api/shop/customers", AuthMiddleware(handleShopCustomers, 1, 4)) // Admin and Shop roles
 
-	r.PathPrefix("/api/order").Handler(createReverseProxy("PROXY_ORDER_URL"))
-	r.PathPrefix("/api/harvestlog").Handler(createReverseProxy("PROXY_HARVESTLOG_URL"))
-	r.PathPrefix("/api/postgrest").Handler(http.StripPrefix("/api/postgrest", createReverseProxy("PROXY_POSTGREST_URL")))
+	// Proxy routes with authentication
+	r.PathPrefix("/api/order").Handler(AuthMiddlewareForHandlers(createReverseProxy("PROXY_ORDER_URL"), 1, 4)) // Admin and Shop roles
+	r.PathPrefix("/api/harvestlog").Handler(AuthMiddlewareForHandlers(createReverseProxy("PROXY_HARVESTLOG_URL"), 1, 2)) // Admin and Farm roles
+	r.PathPrefix("/api/postgrest").Handler(AuthMiddlewareForHandlers(http.StripPrefix("/api/postgrest", createReverseProxy("PROXY_POSTGREST_URL")), 1, 2, 3, 4))
 
 	// Add CORS middleware
 	c := cors.New(cors.Options{
@@ -230,7 +232,7 @@ func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
         "user_id": user.ID,
         "email":   user.Email,
         "role_id": user.Role,
-        "exp":     time.Now().Add(time.Hour * 24).Unix(),
+        "exp":     time.Now().Add(time.Hour * 240).Unix(),
     })
 
     // Sign the token
@@ -284,7 +286,7 @@ func exchangeCodeForTokens(code string) (*GoogleOAuthResponse, error) {
 		return nil, err
 	}
 	
-	return &tokenResponse, nilAuthMiddleware
+	return &tokenResponse, nil
 }
 
 func getUserInfo(accessToken string) (*GoogleUserInfo, error) {
@@ -420,7 +422,66 @@ func AuthMiddleware(next http.HandlerFunc, allowedRoles ...int) http.HandlerFunc
     }
 }
 
-func createReverseProxy(targetEnv string) http.HandlerFunc {
+// AuthMiddlewareForHandlers is a middleware function to check JWT token for http.Handler
+func AuthMiddlewareForHandlers(next http.Handler, allowedRoles ...int) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Get token from Authorization header
+        authHeader := r.Header.Get("Authorization")
+        if authHeader == "" || len(authHeader) < 8 || authHeader[:7] != "Bearer " {
+            http.Error(w, "Invalid or missing Authorization header", http.StatusUnauthorized)
+            return
+        }
+        tokenString := authHeader[7:]
+
+        // Parse and validate the token
+        token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+            if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+                return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+            }
+            return []byte(os.Getenv("JWT_SECRET")), nil
+        })
+
+        if err != nil || !token.Valid {
+            http.Error(w, "Invalid token", http.StatusUnauthorized)
+            return
+        }
+
+        // Check claims
+        claims, ok := token.Claims.(jwt.MapClaims)
+        if !ok {
+            http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+            return
+        }
+
+        // Check role if roles are specified
+        if len(allowedRoles) > 0 {
+            roleID, ok := claims["role_id"].(float64)
+            if !ok {
+                http.Error(w, "Invalid role in token", http.StatusUnauthorized)
+                return
+            }
+
+            roleIntID := int(roleID)
+            authorized := false
+            for _, role := range allowedRoles {
+                if roleIntID == role {
+                    authorized = true
+                    break
+                }
+            }
+
+            if !authorized {
+                http.Error(w, "Insufficient permissions", http.StatusForbidden)
+                return
+            }
+        }
+
+        // Call the wrapped handler
+        next.ServeHTTP(w, r)
+    })
+}
+
+func createReverseProxy(targetEnv string) http.Handler {
     target := os.Getenv(targetEnv)
     if target == "" {
         log.Fatalf("Missing required environment variable: %s", targetEnv)
@@ -441,7 +502,5 @@ func createReverseProxy(targetEnv string) http.HandlerFunc {
         req.URL.Path = targetURL.Path + req.URL.Path
     }
 
-    return func(w http.ResponseWriter, r *http.Request) {
-        proxy.ServeHTTP(w, r)
-    }
+    return proxy
 }
