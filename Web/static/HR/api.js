@@ -1,6 +1,6 @@
-const apiBase = "https://postgrest.kaminjitt.com"; // adjust as needed
+const apiBase = "https://app.kaminjitt.com/api/postgrest"; // adjust as needed
 const jwtToken =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBpX3VzZXIifQ.4TxmV2vnhZ5YTLw39wURDXQlzTHuAoaXHYhdTiqrNgY"; // Optional
+  ""; // Optional
 
 function parseTypes(data) {
   const parsed = {};
@@ -23,7 +23,7 @@ async function submitForm(form) {
 
   // if endpoint is harvestlog
   if (endpoint === "harvestlog") {
-    submitAPI = "https://api.kaminjitt.com/api";
+    submitAPI = "https://app.kaminjitt.com/api"; 
   } else {
     submitAPI = apiBase;
   }

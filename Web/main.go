@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"strings"
@@ -90,6 +91,10 @@ func main() {
 	r.HandleFunc("/api/farm/beehives", AuthMiddleware(handleFarmBeehives, 1, 2))  // Admin and Farm roles
 	r.HandleFunc("/api/hr/users", AuthMiddleware(handleHRUsers, 1, 3))           // Admin and HR roles  
 	r.HandleFunc("/api/shop/customers", AuthMiddleware(handleShopCustomers, 1, 4)) // Admin and Shop roles
+
+	r.PathPrefix("/api/order").Handler(createReverseProxy("PROXY_ORDER_URL"))
+	r.PathPrefix("/api/harvestlog").Handler(createReverseProxy("PROXY_HARVESTLOG_URL"))
+	r.PathPrefix("/api/postgrest").Handler(http.StripPrefix("/api/postgrest", createReverseProxy("PROXY_POSTGREST_URL")))
 
 	// Add CORS middleware
 	c := cors.New(cors.Options{
@@ -279,7 +284,7 @@ func exchangeCodeForTokens(code string) (*GoogleOAuthResponse, error) {
 		return nil, err
 	}
 	
-	return &tokenResponse, nil
+	return &tokenResponse, nilAuthMiddleware
 }
 
 func getUserInfo(accessToken string) (*GoogleUserInfo, error) {
@@ -412,5 +417,31 @@ func AuthMiddleware(next http.HandlerFunc, allowedRoles ...int) http.HandlerFunc
 
         // Call the wrapped handler
         next(w, r)
+    }
+}
+
+func createReverseProxy(targetEnv string) http.HandlerFunc {
+    target := os.Getenv(targetEnv)
+    if target == "" {
+        log.Fatalf("Missing required environment variable: %s", targetEnv)
+    }
+
+    targetURL, err := url.Parse(target)
+    if err != nil {
+        log.Fatalf("Invalid proxy target URL for %s: %v", targetEnv, err)
+    }
+	log.Printf("Proxying to %s", targetURL)
+
+    proxy := httputil.NewSingleHostReverseProxy(targetURL)
+
+    originalDirector := proxy.Director
+    proxy.Director = func(req *http.Request) {
+        originalDirector(req)
+        // Ensures that the path is appended to the base target path
+        req.URL.Path = targetURL.Path + req.URL.Path
+    }
+
+    return func(w http.ResponseWriter, r *http.Request) {
+        proxy.ServeHTTP(w, r)
     }
 }

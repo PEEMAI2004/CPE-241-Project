@@ -1,0 +1,325 @@
+    1  ls
+    2  hostnmae -I
+    3  reboot
+    4  curl -fsSL https://elastic.co/start-local | sh
+    5  docker pull docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.0.0
+    6  sudo docker pull docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.0.0
+    7  docker network create elastic
+    8  sudo docker network create elastic
+    9  sudo docker run --name es01 --net elastic -p 9200:9200 -it -m 1GB docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+   10  sudo docker run 800b89ead4dd46416d4f3df50f107c2cd8a2f509bf657f2d4ad2eff770aab379
+   11  docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt .
+   12  sudo docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt .
+   13  sudo docker sudo cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt .
+   14  sudo docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt .
+   15  curl --cacert http_ca.crt -u elastic:$ELASTIC_PASSWORD https://localhost:9200
+   16  sudo reboot
+   17  docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
+   18  docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana
+   19  sudo docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
+   20  sudo docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana
+   21  export ELASTIC_PASSWORD="12345678"
+   22  export ELASTIC_PASSWORD="R13Zvy+XBcZlm6IPndT4"
+   23  curl --cacert http_ca.crt -u elastic:$ELASTIC_PASSWORD https://localhost:9200
+   24  curl https://localhost:9200
+   25  docker pull docker.elastic.co/kibana/kibana:9.0.0
+   26  sudo docker pull docker.elastic.co/kibana/kibana:9.0.0
+   27  docker run --name kib01 --net elastic -p 5601:5601 docker.elastic.co/kibana/kibana:9.0.0
+   28  sudo docker run --name kib01 --net elastic -p 5601:5601 docker.elastic.co/kibana/kibana:9.0.0
+   29  docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
+   30  docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana
+   31  sudo docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
+   32  sudo docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana
+   33  export ELASTIC_PASSWORD="7ZZF2U0TL0_*XVO0k_Ub"
+   34  sudo docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt .
+   35  curl --cacert http_ca.crt -u elastic:$ELASTIC_PASSWORD https://localhost:9200
+   36  chmod 777
+   37  chmod --help
+   38  sudo chmod 644 http_ca.crt
+   39  sudo docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt
+   40  docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt .
+   41  ls
+   42  sudo docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt .
+   43  sudo chmod 644 http_ca.crt
+   44  ls
+   45  sudo ls -l /home/kamin
+   46  sudo docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt /tmp/http_ca.crt
+   47  sudo mv /tmp/http_ca.crt /home/kamin/
+   48  sudo chown kamin:kamin /home/kamin/http_ca.crt
+   49  chmod 644 /home/kamin/http_ca.crt
+   50  ls
+   51  sudo docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt /tmp/http_ca.crt
+   52  ls /tmp/
+   53  sudo docker cp es01:/usr/share/elasticsearch/config/certs/http_ca.crt /home/kamin/http_ca.crt
+   54  ls
+   55  curl --cacert http_ca.crt -u elastic:$ELASTIC_PASSWORD https://localhost:9200
+   56  docker run --name kib01 --net elastic -p 5601:5601 docker.elastic.co/kibana/kibana:9.0.0
+   57  sudo docker run --name kib01 --net elastic -p 5601:5601 docker.elastic.co/kibana/kibana:9.0.0
+   58  sudo remove 3033106d19fc81f7076db1abc2d7e34086515aa21b5a54af2be9b1850be60b43
+   59  sudo docker remove 3033106d19fc81f7076db1abc2d7e34086515aa21b5a54af2be9b1850be60b43
+   60  sudo docker run --name kib01 --net elastic -p 5601:5601 docker.elastic.co/kibana/kibana:9.0.0
+   61  clear
+   62  docker ps
+   63  sudo docker ps
+   64  wget https://artifacts.elastic.co/cosign.pub
+   65  cosign verify --key cosign.pub docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+   66  docker run --name es01 --net elastic -p 9200:9200 -it -m 1GB docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+   67  sudo docker run --name es01 --net elastic -p 9200:9200 -it -m 1GB docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+   68  docker list container
+   69  docker container
+   70  docker container ls
+   71  sudo docker run --name es01 --net elastic -p 9200:9200 -it -m 1GB docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+   72  docker rm 800b89ead4dd46416d4f3df50f107c2cd8a2f509bf657f2d4ad2eff770aab379
+   73  sudo docker rm 800b89ead4dd46416d4f3df50f107c2cd8a2f509bf657f2d4ad2eff770aab379
+   74  sudo docker run --name es01 --net elastic -p 9200:9200 -it -m 1GB docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+   75  ls
+   76  cd docker
+   77  ls
+   78  hostname -I
+   79  docker compose up -d
+   80  sudo docker compose up -d
+   81  sudo groupadd docker
+   82  sudo usermod -aG docker $USER
+   83  newgrp docker
+   84  sudo systemctl restart docker
+   85  sudo reboot
+   86  docker ps -a
+   87  sudo lsof -i :8080
+   88  sudo ufw allow 8080
+   89  docker logs nocodb
+   90  docker compose up -d --force-recreate
+   91  cd Dockers
+   92  cd Docker
+   93  cd docker
+   94  docker compose up -d --force-recreate
+   95  docker logs nocodb
+   96  docker compose up -d --force-recreate
+   97  docker logs nocodb
+   98  docker compose up -d --force-recreate
+   99  docker logs nocodb
+  100  docker logs metabase
+  101  docker logs nocodb
+  102  cd /
+  103  ls
+  104  cd /usr/app/data
+  105  cd /usr/app/
+  106  docker exec -it nocodb bash
+  107  ls /usr/app/data/nc.db
+  108  git clone https://github.com/metabase/metabase.git
+  109  cd metabase
+  110  cd src/metabase/enterprise/
+  111  cd src/metabase/
+  112  ls
+  113  clear
+  114  clea
+  115  clear
+  116  docker ps
+  117  sudo systemctl status apache2
+  118  grep -r "/home/YOUR_USERNAME/Web" /etc/apache2/sites-enabled/
+  119  sudo nano /etc/apache2/sites-available/whatever.conf
+  120  sudo systemctl status apache2
+  121  sudo reboot
+  122  sudo apt update
+  123  sudo apt install apache2
+  124  chmod -R 755 ~/Web
+  125  sudo nano /etc/apache2/sites-available/myweb.conf
+  126  sudo a2ensite myweb.conf
+  127  sudo systemctl reload apache2
+  128  systemctl reload apache2
+  129  sudo nano /etc/hosts
+  130  sudo nano /etc/apache2/ports.conf
+  131  systemctl reload apache2
+  132  sudo nano /etc/apache2/sites-available/fill.kaminjitt.com.conf
+  133  sudo a2ensite fill.kaminjitt.com.conf
+  134  sudo systemctl reload apache2
+  135  systemctl reload apache2
+  136  ls ~/Web/index.html
+  137  echo "<h1>Hello from fill.kaminjitt.com</h1>" > ~/Web/index.html
+  138  nano /etc/apache2/sites-available/fill.kaminjitt.com.conf
+  139  sudo nano /etc/apache2/sites-available/fill.kaminjitt.com.conf
+  140  sudo systemctl reload apache2
+  141  cat /etc/apache2/mods-enabled/dir.conf
+  142  sudo systemctl reload apache2
+  143  chmod -R 755 ~/Web
+  144  sudo apache2ctl -S
+  145  sudo nano /etc/apache2/sites-available/fill.kaminjitt.com.conf
+  146  sudo systemctl reload apache2
+  147  sudo apache2ctl -S
+  148  sudo killall -9 apache2
+  149  sudo systemctl start apache2
+  150  sudo nano /etc/apache2/sites-available/fill.kaminjitt.com.conf
+  151  sudo chown -R $USER:$USER .
+  152  sudo systemctl start apache2
+  153  sudo systemctl status apache2
+  154  grep -r "/home/YOUR_USERNAME/Web" /etc/apache2/sites-enabled/
+  155  cd /etc/apache2/sites-enabled/
+  156  sudo rm *.conf
+  157  sudo systemctl status apache2
+  158  kill 779
+  159  sudo killall -9 apache2
+  160  sudo systemctl start apache2
+  161  sudo systemctl status apache2
+  162  sudo nano /etc/apache2/sites-available/fill.kaminjitt.com.conf
+  163  sudo a2ensite fill.kaminjitt.com.conf
+  164  sudo systemctl reload apache2
+  165  sudo apache2ctl -S
+  166  sudo nano /etc/apache2/apache2.conf
+  167  sudo systemctl reload apache2
+  168  systemctl status apache2.service
+  169  sudo nano /etc/apache2/apache2.conf
+  170  sudo systemctl reload apache2
+  171  systemctl status apache2.service
+  172  sudo nano /etc/apache2/apache2.conf
+  173  sudo systemctl reload apache2
+  174  systemctl status apache2.service
+  175  systemctl stop apache2.service
+  176  systemctl status apache2.service
+  177  sudo systemctl reload apache2
+  178  sudo systemctl start apache2
+  179  sudo apache2ctl configtest
+  180  sudo a2dissite *
+  181  systemctl reload apache2
+  182  sudo a2dissite *
+  183  sudo a2ensite fill.kaminjitt.com.conf
+  184  sudo systemctl reload apache2
+  185  sudo systemctl status apache2.service
+  186  sudo tail -n 50 /var/log/apache2/error.log
+  187  sudo chown -R www-data:www-data /home/kamin/Web
+  188  sudo chmod -R 755 /home/kamin/Web
+  189  sudo rm /etc/apache2/sites-available/fill.kaminjitt.com.conf
+  190  sudo nano /etc/apache2/sites-available/fill.kaminjitt.com.conf
+  191  sudo systemctl reload apache2
+  192  sudo apache2ctl configtest
+  193  sudo systemctl restart apache2
+  194  ls /etc/apache2/sites-available
+  195  ls -l /etc/apache2/sites-enabled/
+  196  sudo nano /etc/apache2/sites-available/fill.kaminjitt.com.conf
+  197  sudo apt remove apache2
+  198  sudo chown -R www-data:www-data ~/Web
+  199  sudo chmod -R 755 ~/Web
+  200  sudo nano /etc/nginx/conf.d/default.conf
+  201  sudo touch /etc/nginx/conf.d/default.conf
+  202  nginx -v
+  203  sudo apt install nginx
+  204  sudo mkdir -p /etc/nginx/conf.d/
+  205  sudo touch /etc/nginx/conf.d/default.conf
+  206  sudo nano /etc/nginx/conf.d/default.conf
+  207  sudo systemctl restart nginx
+  208  sudo nano /etc/nginx/conf.d/default.conf
+  209  docker exec -it web_app bash
+  210  docker exec -it web_app sh
+  211  clear
+  212  cd ~/Web
+  213  ls
+  214  cd Farm
+  215  ls
+  216  fdocker pd
+  217  docker ps
+  218  docker restart 0849ff0e6eab
+  219  cd ..
+  220  ls
+  221  nona docker-compose.yml 
+  222  nano docker-compose.yml 
+  223  curl localhost:4000
+  224  curl http://localhost:4000
+  225  git clone https://github.com/openmaptiles/openmaptiles.git
+  226  cd openmaptiles
+  227  ls
+  228  screen -ls
+  229  ssh 192.168.1.224
+  230  sudo ufw allow 8888
+  231  systemctl stop apache2
+  232  systemctl disable apache2
+  233  clear
+  234  sudo ufw allow 8888
+  235  hostname -I
+  236  sudo netstat -ano -p tcp
+  237  lsof -i :80
+  238  lsof -i :8888
+  239  lsof -i
+  240  Error response from daemon: driver failed programming external connectivity on endpoint pgadmin (89f8be1070c475614aacef43389dd3e8b477f756abda02a44e5cca6ddafc701c): failed to bind port 0.0.0.0:80/tcp: Error starting userland proxy: listen tcp4 0.0.0.0:80: bind: address already in use
+  241  sudo lsof -i :80
+  242  # or
+  243  sudo ss -tulpn | grep :80
+  244  kill 511
+  245  kill 746
+  246  sudo kill 746
+  247  sudo ss -tulpn | grep :80
+  248  sudo kill 744
+  249  sudo ss -tulpn | grep :80
+  250  hostname -I
+  251  ls
+  252  cd .~
+  253  sudo rm ~/Web/.~
+  254  sudo rm ~/Web/.~ -r
+  255  sudo reboot
+  256  cd ~/Web
+  257  docker compose up -d
+  258  sudo ss -tulpn | grep :80
+  259  ls
+  260  docker -ps
+  261  docker ps
+  262  cd docker
+  263  hostname -I
+  264  git config
+  265  git push
+  266  gh
+  267  sudo apt install gh
+  268  gh repo clone PEEMAI2004/CPE-241-Project
+  269  gh auth login
+  270  gh repo clone PEEMAI2004/CPE-241-Project
+  271  cd CPE-241-Project/
+  272  cd Web/
+  273  ls
+  274  history
+  275  docker compose up -d
+  276  cd ..
+  277  cd API
+  278  docker-compose up --build
+  279  ls
+  280  docker-compose up --build
+  281  git clone --depth=1  https://github.com/apache/superset.git
+  282  cd superset/
+  283  # Set the version you want to run
+  284  export TAG=3.1.1
+  285  # Fetch the tag you're about to check out (assuming you shallow-cloned the repo)
+  286  git fetch --depth=1 origin tag $TAG
+  287  # Could also fetch all tags too if you've got bandwidth to spare
+  288  # git fetch --tags
+  289  # Checkout the corresponding git ref
+  290  git checkout $TAG
+  291  # Fire up docker compose
+  292  docker compose -f docker-compose-image-tag.yml up
+  293  ls
+  294  docker compose -f docker-compose.yml up
+  295  go main.go
+  296  sudo apt  install golang-go
+  297  go main.go
+  298  go run main.go
+  299  clear
+  300  ls
+  301  cd CPE-241-Project/
+  302  ls
+  303  docker ps
+  304  history
+  305  sudo ss -tulpn | grep :8080
+  306  docker ps
+  307  cd ..
+  308  clear
+  309  cd ~
+  310  tree
+  311  cd ~/Web/
+  312  ls
+  313  cd ~/Web/
+  314  ls
+  315  screen -ls
+  316  screen -t 1
+  317  screen -r pts-0.ubuntu6 
+  318  clear
+  319  cd Web
+  320  cd ..
+  321  cd CPE-241-Project/Web/
+  322  go run main.go
+  323  go get github.com/dgrijalva/jwt-go github.com/gorilla/mux github.com/joho/godotenv github.com/lib/pq github.com/rs/cors
+  324  go run main.go
+  325  history > ~/CPE-241-Project/Web/history.txt

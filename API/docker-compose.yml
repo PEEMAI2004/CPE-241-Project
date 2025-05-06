@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  go-api:
+    build:
+      context: .
+    ports:
+      - "6000:6000"
+    environment:
+      - PORT=6000
+    restart: unless-stopped

@@ -11,7 +11,7 @@ import (
 // CORS middleware
 func enableCORS(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Access-Control-Allow-Origin", "http://127.0.0.1:5500") // Allow requests from your frontend
+        w.Header().Set("Access-Control-Allow-Origin", "https://app.kaminjitt.com") // Allow requests from your frontend
         w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PATCH")
         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
         if r.Method == http.MethodOptions {
@@ -38,6 +38,6 @@ func main() {
     mux.HandleFunc("/api/check-stock", orderHandler.HandleCheckStock)
 
     // Wrap routes with CORS middleware
-    fmt.Println("Server is running on http://localhost:8080")
-    log.Fatal(http.ListenAndServe(":8080", enableCORS(mux)))
+    fmt.Println("Server is running on http://localhost:6000")
+    log.Fatal(http.ListenAndServe(":6000", enableCORS(mux)))
 }
