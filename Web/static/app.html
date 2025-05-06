@@ -47,81 +47,217 @@
     </div>
 
     <script>
-    // Immediately check for token in URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    
-    if (token) {
-        console.log("Token found in URL, saving to localStorage");
-        localStorage.setItem('token', token);
-        window.history.replaceState({}, document.title, "/app");
-    }
-    
-    // Main app functionality
-    window.addEventListener('DOMContentLoaded', () => {
-        const storedToken = localStorage.getItem('token');
+        // Immediately check for token in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
         
-        // If no token, redirect to login page
-        if (!storedToken) {
-            console.log("No token found, redirecting to login");
-            window.location.href = '/';
-            return;
+        if (token) {
+            console.log("Token found in URL, saving to localStorage");
+            localStorage.setItem('token', token);
+            window.history.replaceState({}, document.title, "/app");
         }
         
-        console.log("Verifying token with backend");
+        // Add authorization header to all fetch requests
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            const storedToken = localStorage.getItem('token');
+            if (storedToken) {
+                options = options || {};
+                options.headers = options.headers || {};
+                if (!options.headers['Authorization']) {
+                    options.headers['Authorization'] = `Bearer ${storedToken}`;
+                }
+            }
+            return originalFetch(url, options);
+        };
+    
+        // Add authorization header to all XHR requests (for assets, AJAX calls, etc.)
+        const originalXhrOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function() {
+            this.addEventListener('readystatechange', function() {
+                if (this.readyState === 1) { // OPENED state
+                    const storedToken = localStorage.getItem('token');
+                    if (storedToken && !this.getRequestHeader('Authorization')) {
+                        this.setRequestHeader('Authorization', `Bearer ${storedToken}`);
+                    }
+                }
+            });
+            originalXhrOpen.apply(this, arguments);
+        };
+    
+        // Helper method for XHR
+        XMLHttpRequest.prototype.getRequestHeader = function(header) {
+            return this.requestHeaders ? this.requestHeaders[header.toLowerCase()] : null;
+        };
+    
+        // Modified to track headers
+        XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+            this.requestHeaders = this.requestHeaders || {};
+            this.requestHeaders[header.toLowerCase()] = value;
+            return this._setRequestHeader(header, value);
+        };
+        XMLHttpRequest.prototype._setRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
         
-        // Verify token with backend
-        fetch('/verify-token', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${storedToken}`
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Invalid token');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Token verified, user data:", data);
-            // Display user information
-            document.getElementById('user-email').textContent = data.email;
-            document.getElementById('user-role').textContent = data.role_id;
+        // Main app functionality
+        window.addEventListener('DOMContentLoaded', () => {
+            const storedToken = localStorage.getItem('token');
             
-            // Handle role-based access
-            const roleId = data.role_id;
-            
-            // Show appropriate navigation based on role
-            if (roleId === 1) {
-                // Admin - show all buttons
-                document.getElementById('all-access').style.display = 'block';
-            } else if (roleId === 2) {
-                // Farm role
-                document.getElementById('farm-access').style.display = 'block';
-            } else if (roleId === 3) {
-                // HR role
-                document.getElementById('hr-access').style.display = 'block';
-            } else if (roleId === 4) {
-                // Shop role
-                document.getElementById('shop-access').style.display = 'block';
+            // If no token, redirect to login page
+            if (!storedToken) {
+                console.log("No token found, redirecting to login");
+                window.location.href = '/';
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Token verification error:', error);
-            // Clear token and redirect to login
-            localStorage.removeItem('token');
-            window.location.href = '/';
+            
+            console.log("Verifying token with backend");
+            
+            // Verify token with backend
+            fetch('/verify-token')  // No need to add token manually, interceptor will add it
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Invalid token');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Token verified, user data:", data);
+                // Display user information
+                document.getElementById('user-email').textContent = data.email;
+                document.getElementById('user-role').textContent = data.role_id;
+                
+                // Handle role-based access
+                const roleId = data.role_id;
+                
+                // Show appropriate navigation based on role
+                if (roleId === 1) {
+                    // Admin - show all buttons
+                    document.getElementById('all-access').style.display = 'block';
+                } else if (roleId === 2) {
+                    // Farm role
+                    document.getElementById('farm-access').style.display = 'block';
+                } else if (roleId === 3) {
+                    // HR role
+                    document.getElementById('hr-access').style.display = 'block';
+                } else if (roleId === 4) {
+                    // Shop role
+                    document.getElementById('shop-access').style.display = 'block';
+                }
+    
+                // Now that we're authenticated, preload critical resources
+                preloadAuthenticatedResources();
+            })
+            .catch(error => {
+                console.error('Token verification error:', error);
+                // Clear token and redirect to login
+                localStorage.removeItem('token');
+                window.location.href = '/';
+            });
+            
+            // Preload authenticated resources
+            function preloadAuthenticatedResources() {
+                // This function can preload any critical CSS, JS, or other static files
+                // that are needed for the app but require authentication
+                const criticalResources = [
+                    '/static/styles/main.css',
+                    '/static/js/app.js'
+                    // Add other critical resources here
+                ];
+                
+                criticalResources.forEach(resource => {
+                    const preloadLink = document.createElement('link');
+                    preloadLink.href = resource;
+                    preloadLink.rel = 'preload';
+                    preloadLink.as = resource.endsWith('.css') ? 'style' : 'script';
+                    document.head.appendChild(preloadLink);
+                    
+                    // Actually load the styles/scripts
+                    if (resource.endsWith('.css')) {
+                        const link = document.createElement('link');
+                        link.href = resource;
+                        link.rel = 'stylesheet';
+                        document.head.appendChild(link);
+                    } else if (resource.endsWith('.js')) {
+                        const script = document.createElement('script');
+                        script.src = resource;
+                        script.async = true;
+                        document.body.appendChild(script);
+                    }
+                });
+            }
+            
+            // Set up logout functionality
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                localStorage.removeItem('token');
+                window.location.href = '/';
+            });
+    
+            // Add token to all image src attributes that need authentication
+            document.querySelectorAll('img[data-auth="true"]').forEach(img => {
+                const originalSrc = img.getAttribute('src');
+                if (originalSrc && !img.tokenAdded) {
+                    // We'll use a custom fetch to load the image with authentication
+                    fetch(originalSrc)
+                        .then(response => response.blob())
+                        .then(blob => {
+                            const objectUrl = URL.createObjectURL(blob);
+                            img.src = objectUrl;
+                            img.tokenAdded = true;
+                        })
+                        .catch(error => console.error('Error loading authenticated image:', error));
+                }
+            });
+            
+            // Handle forms submission with authentication
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    // If the form doesn't have its own authentication handling,
+                    // we'll add the token to the submission
+                    if (!this.hasAttribute('data-no-auth')) {
+                        e.preventDefault();
+                        
+                        const formData = new FormData(this);
+                        const url = this.getAttribute('action') || window.location.href;
+                        const method = this.getAttribute('method') || 'POST';
+                        
+                        fetch(url, {
+                            method: method,
+                            body: formData
+                            // Our fetch interceptor will add the token
+                        })
+                        .then(response => {
+                            if (response.redirected) {
+                                window.location.href = response.url;
+                            }
+                            return response.text();
+                        })
+                        .then(text => {
+                            try {
+                                return JSON.parse(text);
+                            } catch (e) {
+                                return text;
+                            }
+                        })
+                        .then(data => {
+                            // Handle form submission response
+                            console.log('Form submission response:', data);
+                            
+                            // You can add custom form handling here
+                            const resultEvent = new CustomEvent('form-result', { 
+                                detail: { success: true, data: data } 
+                            });
+                            this.dispatchEvent(resultEvent);
+                        })
+                        .catch(error => {
+                            console.error('Form submission error:', error);
+                            const resultEvent = new CustomEvent('form-result', { 
+                                detail: { success: false, error: error } 
+                            });
+                            this.dispatchEvent(resultEvent);
+                        });
+                    }
+                });
+            });
         });
-
-        
-        
-        // Set up logout functionality
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('token');
-            window.location.href = '/';
-        });
-    });
     </script>
 </body>
 </html>

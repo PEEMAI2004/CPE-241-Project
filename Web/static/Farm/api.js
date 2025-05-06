@@ -1,6 +1,9 @@
 const apiBase = "https://app.kaminjitt.com/api/postgrest"; // adjust as needed
-const jwtToken =
-  ""; // Optional
+
+// Get the JWT token from localStorage
+function getAuthToken() {
+  return localStorage.getItem('token') || "";
+}
 
 function parseTypes(data) {
   const parsed = {};
@@ -28,11 +31,12 @@ async function submitForm(form) {
   const endpoint = form.dataset.endpoint;
   const resultDisplay = document.getElementById("result");
 
-  // if endpoint is harvestlog
+  // Determine API base URL based on endpoint
+  let submitAPI;
   if (endpoint === "harvestlog") {
-    submitAPI = "https://app.kaminjitt.com/api" 
+    submitAPI = "https://app.kaminjitt.com/api";
   } else {
-    submitAPI = apiBase
+    submitAPI = apiBase;
   }
 
   try {
@@ -41,7 +45,7 @@ async function submitForm(form) {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${jwtToken}`,
+        Authorization: `Bearer ${getAuthToken()}`, // Use token from localStorage
       },
       body: JSON.stringify(data),
     });
@@ -70,12 +74,22 @@ async function loadDropdown(tableName, dropdownId, idColumn, nameColumn) {
     const res = await fetch(url, {
       headers: {
         Accept: "application/json",
-        Authorization: `Bearer ${jwtToken}`,
+        Authorization: `Bearer ${getAuthToken()}`, // Use token from localStorage
       },
     });
 
+    if (!res.ok) {
+      throw new Error(`HTTP error ${res.status}`);
+    }
+
     const items = await res.json();
     dropdown.innerHTML = "";
+
+    // Add empty default option
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = `-- Select ${tableName} --`;
+    dropdown.appendChild(defaultOption);
 
     items.forEach((item) => {
       const option = document.createElement("option");
@@ -84,12 +98,67 @@ async function loadDropdown(tableName, dropdownId, idColumn, nameColumn) {
       dropdown.appendChild(option);
     });
   } catch (e) {
-    dropdown.innerHTML = `<option>Error loading ${tableName}</option>`;
+    console.error(`Error loading ${tableName}:`, e);
+    dropdown.innerHTML = `<option value="">Error loading ${tableName}</option>`;
   }
+}
+
+// Generic form submission handler
+async function handleFormSubmit(e, formId, endpoint) {
+  e.preventDefault();
+  const form = document.getElementById(formId);
+  if (!form) return;
+
+  const formData = new FormData(form);
+  const data = parseTypes(Object.fromEntries(formData.entries()));
+  const resultDisplay = document.getElementById("result");
+
+  // Determine API base URL based on endpoint
+  let submitAPI;
+  if (endpoint === "harvestlog") {
+    submitAPI = "https://app.kaminjitt.com/api";
+  } else {
+    submitAPI = apiBase;
+  }
+
+  try {
+    const res = await fetch(`${submitAPI}/${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${getAuthToken()}`, // Use token from localStorage
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (res.ok) {
+      resultDisplay.textContent = "Insert successful!";
+      form.reset();
+    } else {
+      const err = await res.text();
+      resultDisplay.textContent = "Error: " + err;
+    }
+  } catch (err) {
+    resultDisplay.textContent = "Network error: " + err.message;
+  }
+}
+
+// Add event listeners for API request error handling
+function setupApiErrorHandling() {
+  window.addEventListener('unhandledrejection', event => {
+    if (event.reason && event.reason.message && event.reason.message.includes('401')) {
+      console.error('Authentication error. Redirecting to login page.');
+      localStorage.removeItem('token');
+      window.location.href = '/';
+    }
+  });
 }
 
 // Attach form handler dynamically
 document.addEventListener("DOMContentLoaded", () => {
+  // Set up API error handling
+  setupApiErrorHandling();
   const form = document.querySelector("form");
   if (form) {
     form.addEventListener("submit", (e) => {
@@ -97,31 +166,10 @@ document.addEventListener("DOMContentLoaded", () => {
       submitForm(form);
     });
   }
-// Add event listeners for the Role form and load dropdowns
-function setupRoleForm() {
-  document
-    .getElementById("roleForm")
-    ?.addEventListener("submit", (e) =>
-      handleFormSubmit(e, "roleForm", "webrole")
-    );
-}
-  loadDropdown(
-    "geolocation",
-    "locationDropdown",
-    "location_id",
-    "location_name"
-  ); // load geolocation dropdown with specific columns
 });
 
 // Add event listeners for the BeeHive form and load dropdowns
-function setupBeeHiveForm() {
-  document
-    .getElementById("beeHiveForm")
-    ?.addEventListener("submit", (e) =>
-      handleFormSubmit(e, "beeHiveForm", "beehive")
-    );
-
-  // Load dropdowns for relevant fields with specific columns
+if (document.getElementById("beeHiveForm")) {
   loadDropdown("planttype", "plantDropdown", "plant_id", "plant_name");
   loadDropdown("beetype", "beetypeDropdown", "beetype_id", "beetype_name");
   loadDropdown(
@@ -130,34 +178,20 @@ function setupBeeHiveForm() {
     "beekeeper_id",
     "name"
   );
+  loadDropdown(
+    "geolocation",
+    "locationDropdown",
+    "location_id",
+    "location_name"
+  );
 }
-
-setupBeeHiveForm();
 
 // Add event listeners for the QueenBee form and load dropdowns
-function setupQueenBeeForm() {
-  document
-    .getElementById("queenBeeForm")
-    ?.addEventListener("submit", (e) =>
-      handleFormSubmit(e, "queenBeeForm", "queenbee")
-    );
-
-  // Load dropdowns for relevant fields with specific columns
-  loadDropdown("beehive", "beehiveDropdown", "beehive_id", "beehive_number");
+if (document.getElementById("queenBeeForm")) {
+  loadDropdown("beehive", "beehiveDropdown", "beehive_id", "beehive_status");
 }
 
-setupQueenBeeForm();
-
-// Add event listeners for the orders form and load dropdowns
-function setupOrdersForm() {
-  document
-    .getElementById("ordersForm")
-    ?.addEventListener("submit", (e) =>
-      handleFormSubmit(e, "ordersForm", "orders")
-    );
-
-  // Load dropdowns for relevant fields with specific columns
-loadDropdown("customer", "customerDropdown", "customer_id", "fullname");
+// Add event listeners for the harvestlog form and load dropdowns
+if (document.getElementById("harvestLogForm")) {
+  loadDropdown("beehive", "beehiveDropdown", "beehive_id", "beehive_status");
 }
-
-setupOrdersForm();

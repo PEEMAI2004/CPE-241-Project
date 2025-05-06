@@ -1,6 +1,9 @@
 const apiBase = "https://app.kaminjitt.com/api/postgrest"; // adjust as needed
-const jwtToken =
-  ""; // Optional
+
+// Get the JWT token from localStorage
+function getAuthToken() {
+  return localStorage.getItem('token') || "";
+}
 
 function parseTypes(data) {
   const parsed = {};
@@ -8,6 +11,13 @@ function parseTypes(data) {
     if (value === "") continue;
     if (key.endsWith("_id") || key === "beekeeper_age") {
       parsed[key] = parseInt(value);
+    } else if (
+      key === "latitude" ||
+      key === "longitude" ||
+      key === "land_area" ||
+      key === "production"
+    ) {
+      parsed[key] = parseFloat(value);
     } else {
       parsed[key] = value;
     }
@@ -21,9 +31,10 @@ async function submitForm(form) {
   const endpoint = form.dataset.endpoint;
   const resultDisplay = document.getElementById("result");
 
-  // if endpoint is harvestlog
+  // Determine API base URL based on endpoint
+  let submitAPI;
   if (endpoint === "harvestlog") {
-    submitAPI = "https://app.kaminjitt.com/api"; 
+    submitAPI = "https://app.kaminjitt.com/api";
   } else {
     submitAPI = apiBase;
   }
@@ -34,7 +45,7 @@ async function submitForm(form) {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${jwtToken}`,
+        Authorization: `Bearer ${getAuthToken()}`, // Use token from localStorage
       },
       body: JSON.stringify(data),
     });
@@ -51,17 +62,6 @@ async function submitForm(form) {
   }
 }
 
-// Attach form handler dynamically
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector("form");
-  if (form) {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      submitForm(form);
-    });
-  }
-});
-
 // Generic function to load dropdowns from any table
 async function loadDropdown(tableName, dropdownId, idColumn, nameColumn) {
   const dropdown = document.getElementById(dropdownId);
@@ -74,12 +74,22 @@ async function loadDropdown(tableName, dropdownId, idColumn, nameColumn) {
     const res = await fetch(url, {
       headers: {
         Accept: "application/json",
-        Authorization: `Bearer ${jwtToken}`,
+        Authorization: `Bearer ${getAuthToken()}`, // Use token from localStorage
       },
     });
 
+    if (!res.ok) {
+      throw new Error(`HTTP error ${res.status}`);
+    }
+
     const items = await res.json();
     dropdown.innerHTML = "";
+
+    // Add empty default option
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = `-- Select ${tableName} --`;
+    dropdown.appendChild(defaultOption);
 
     items.forEach((item) => {
       const option = document.createElement("option");
@@ -88,19 +98,79 @@ async function loadDropdown(tableName, dropdownId, idColumn, nameColumn) {
       dropdown.appendChild(option);
     });
   } catch (e) {
-    dropdown.innerHTML = `<option>Error loading ${tableName}</option>`;
+    console.error(`Error loading ${tableName}:`, e);
+    dropdown.innerHTML = `<option value="">Error loading ${tableName}</option>`;
   }
 }
 
-// Add event listeners for the Beekeeper form and load dropdowns
-function setupBeeKeeperForm() {
-  document
-    .getElementById("beekeeperForm")
-    ?.addEventListener("submit", (e) =>
-      handleFormSubmit(e, "beekeeperForm", "beekeeper")
-    );
+// Generic form submission handler
+async function handleFormSubmit(e, formId, endpoint) {
+  e.preventDefault();
+  const form = document.getElementById(formId);
+  if (!form) return;
+  
+  const formData = new FormData(form);
+  const data = parseTypes(Object.fromEntries(formData.entries()));
+  const resultDisplay = document.getElementById("result");
+  
+  // Determine API base URL based on endpoint
+  let submitAPI;
+  if (endpoint === "harvestlog") {
+    submitAPI = "https://app.kaminjitt.com/api";
+  } else {
+    submitAPI = apiBase;
+  }
 
-  // Load dropdowns for relevant fields with specific columns
+  try {
+    const res = await fetch(`${submitAPI}/${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${getAuthToken()}`, // Use token from localStorage
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (res.ok) {
+      resultDisplay.textContent = "Insert successful!";
+      form.reset();
+    } else {
+      const err = await res.text();
+      resultDisplay.textContent = "Error: " + err;
+    }
+  } catch (err) {
+    resultDisplay.textContent = "Network error: " + err.message;
+  }
+}
+
+// Add event listeners for API request error handling
+function setupApiErrorHandling() {
+  window.addEventListener('unhandledrejection', event => {
+    if (event.reason && event.reason.message && event.reason.message.includes('401')) {
+      console.error('Authentication error. Redirecting to login page.');
+      localStorage.removeItem('token');
+      window.location.href = '/';
+    }
+  });
+}
+
+// Attach form handler dynamically
+document.addEventListener("DOMContentLoaded", () => {
+  // Set up API error handling
+  setupApiErrorHandling();
+  
+  const form = document.querySelector("form");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitForm(form);
+    });
+  }
+});
+
+// Add event listeners for the BeeHive form and load dropdowns
+if (document.getElementById("beekeeperForm")) {
   loadDropdown("webuser", "user_idDropdown", "user_id", "name");
   loadDropdown(
     "geolocation",
@@ -110,29 +180,7 @@ function setupBeeKeeperForm() {
   );
 }
 
-setupBeeKeeperForm();
-
 // Add event listeners for the User form and load dropdowns
-function setupUserForm() {
-  document
-    .getElementById("userForm")
-    ?.addEventListener("submit", (e) =>
-      handleFormSubmit(e, "userForm", "webuser")
-    );
-
-  // Load dropdowns for relevant fields with specific columns
+if (document.getElementById("userForm")) {
   loadDropdown("webrole", "role_idDropdown", "role_id", "role_name");
 }
-
-setupUserForm();
-
-// Add event listeners for the Role form and load dropdowns
-function setupRoleForm() {
-  document
-    .getElementById("roleForm")
-    ?.addEventListener("submit", (e) =>
-      handleFormSubmit(e, "roleForm", "webrole")
-    );
-}
-
-setupRoleForm();
