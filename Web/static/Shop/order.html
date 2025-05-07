@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Data Entry Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    
+    .form-header {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .id-field {
+      flex: 1;
+    }
+    
+    .id-field label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    .id-field input, .id-field select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    
+    .input-container {
+      margin-bottom: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .input-group {
+      display: flex;
+      flex-grow: 1;
+      gap: 10px;
+    }
+    
+    input[type="text"].number-input,
+    input[type="number"].price-input,
+    select.number-input {
+      flex-grow: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    
+    .remove-btn {
+      width: 24px;
+      height: 24px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+    }
+    
+    .remove-btn:hover {
+      background-color: #d32f2f;
+    }
+    
+    .remove-btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+      width: 100%;
+    }
+    
+    button:hover {
+      background-color: #45a049;
+    }
+    
+    #submit-btn {
+      margin-top: 20px;
+      background-color: #2196F3;
+    }
+    
+    #submit-btn:hover {
+      background-color: #0b7dda;
+    }
+    
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .section-header {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    
+    .search-container {
+      margin-bottom: 15px;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    
+    /* Stock search results container */
+    .search-results {
+      position: relative;
+    }
+    
+    .stock-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: none;
+    }
+    
+    .stock-result-item {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .stock-result-item:hover {
+      background-color: #f0f0f0;
+    }
+    
+    .stock-result-item:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sales Data Entry Form</h1>
+  
+  <form id="orderForm">
+    <div class="form-header">
+      <div class="id-field">
+        <label for="customer_id">Customer:</label>
+        <select id="customer_id" name="customer_id" required>
+          <option value="">-- Select Customer --</option>
+        </select>
+      </div>
+      <div class="id-field">
+        <!-- Hidden field for user_id, will be filled from JWT -->
+        <input type="hidden" id="user_id" name="user_id">
+        <label for="current_user">Current User:</label>
+        <input type="text" id="current_user" disabled>
+      </div>
+    </div>
+    
+    <div class="section-header">Honey Stock:</div>
+    
+    <div class="search-container">
+      <div class="search-results">
+        <input type="text" id="stock-search" placeholder="Search honey stock by ID or description..." class="search-input">
+        <div id="stock-results" class="stock-results"></div>
+      </div>
+    </div>
+    
+    <div id="inputs">
+      <div class="item-row input-container">
+        <div class="input-group">
+          <select name="stock_id" class="number-input" required>
+            <option value="">-- Select Honey Stock --</option>
+          </select>
+          <input type="number" name="price" step="0.01" min="0" class="price-input" placeholder="Sale Price" required>
+        </div>
+        <button type="button" class="remove-btn" disabled>✕</button>
+      </div>
+    </div>
+    
+    <button type="button" id="add-btn">Add New Field</button>
+    <button type="submit" id="submit-btn">Submit</button>
+  </form>
+  
+  <div id="result" class="result" style="display:none"></div>
+  
+  <script src="api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('orderForm');
+      const inputsContainer = document.getElementById('inputs');
+      const addButton = document.getElementById('add-btn');
+      const resultDisplay = document.getElementById('result');
+      
+      // Load user info from JWT token
+      loadUserFromToken();
+      
+      // Load dropdown data
+      loadDropdown('customer', 'customer_id', 'customer_id', 'fullname');
+      loadHoneyStockDropdowns();
+      
+      // Set up the stock search functionality
+      setupStockSearch();
+      
+      // Add event listener to the add button
+      addButton.addEventListener('click', addNewInput);
+      
+      // Function to remove an input field
+      function removeInput(e) {
+        const container = e.target.closest('.item-row');
+        container.remove();
+        
+        // If there's only one input field left, disable its remove button
+        const inputContainers = document.querySelectorAll('.item-row');
+        if (inputContainers.length === 1) {
+          inputContainers[0].querySelector('.remove-btn').disabled = true;
+        }
+      }
+      
+      // Function to add a new input field
+      function addNewInput() {
+        // Enable the remove button of the first field if this is the second field
+        const inputContainers = document.querySelectorAll('.item-row');
+        if (inputContainers.length === 1) {
+          inputContainers[0].querySelector('.remove-btn').disabled = false;
+        }
+        
+        const newInputContainer = document.createElement('div');
+        newInputContainer.className = 'item-row input-container';
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group';
+        
+        // Create select dropdown for stock_id
+        const stockSelect = document.createElement('select');
+        stockSelect.name = 'stock_id';
+        stockSelect.className = 'number-input';
+        stockSelect.required = true;
+        stockSelect.innerHTML = '<option value="">-- Select Honey Stock --</option>';
+        
+        const priceInput = document.createElement('input');
+        priceInput.type = 'number';
+        priceInput.name = 'price';
+        priceInput.className = 'price-input';
+        priceInput.placeholder = 'Sale Price';
+        priceInput.step = '0.01';
+        priceInput.min = '0';
+        priceInput.required = true;
+        
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'remove-btn';
+        removeButton.textContent = '✕';
+        removeButton.addEventListener('click', removeInput);
+        
+        inputGroup.appendChild(stockSelect);
+        inputGroup.appendChild(priceInput);
+        newInputContainer.appendChild(inputGroup);
+        newInputContainer.appendChild(removeButton);
+        inputsContainer.appendChild(newInputContainer);
+        
+        // Load honey stock data for the new dropdown
+        loadHoneyStockDropdown(stockSelect);
+      }
+      
+      function loadHoneyStockDropdowns() {
+        // Load all existing honey stock dropdowns
+        document.querySelectorAll('.item-row select[name="stock_id"]').forEach(dropdown => {
+          loadHoneyStockDropdown(dropdown);
+        });
+      }
+      
+      function setupStockSearch() {
+        const searchInput = document.getElementById('stock-search');
+        const resultsContainer = document.getElementById('stock-results');
+        
+        if (!searchInput || !resultsContainer) return;
+        
+        // Debounce function to limit API calls
+        let debounceTimer;
+        
+        searchInput.addEventListener('input', function() {
+          clearTimeout(debounceTimer);
+          const searchTerm = this.value.trim();
+          
+          if (searchTerm.length < 2) {
+            resultsContainer.style.display = 'none';
+            return;
+          }
+          
+          debounceTimer = setTimeout(() => searchHoneyStock(searchTerm), 300);
+        });
+        
+        // Close results when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+            resultsContainer.style.display = 'none';
+          }
+        });
+      }
+      
+      async function searchHoneyStock(searchTerm) {
+        const resultsContainer = document.getElementById('stock-results');
+        
+        try {
+          // Search by ID or description
+          let url = `${apiBase}/honeystock?or=(stock_id.eq.${searchTerm})&select=stock_id,is_sold,quantity`;
+          
+          const res = await fetch(url, {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${getAuthToken()}`,
+            },
+          });
+          
+          if (!res.ok) {
+            throw new Error(`HTTP error ${res.status}`);
+          }
+          
+          const items = await res.json();
+          
+          // Display search results
+          resultsContainer.innerHTML = '';
+          
+          if (items.length === 0) {
+            resultsContainer.innerHTML = '<div class="stock-result-item">No results found</div>';
+            resultsContainer.style.display = 'block';
+            return;
+          }
+          
+          items.forEach(item => {
+            const resultItem = document.createElement('div');
+            resultItem.className = 'stock-result-item';
+            resultItem.textContent = `ID: ${item.stock_id} (${item.quantity} available)`;
+            
+            // Add click handler to select this item
+            resultItem.addEventListener('click', () => {
+              // Find the currently active row or add a new one if needed
+              let currentRow = document.querySelector('.item-row:last-child');
+              let dropdown = currentRow.querySelector('select[name="stock_id"]');
+              let price = currentRow.querySelector('input[name="price"]');
+              
+              // If the current row already has a value, add a new row
+              if (dropdown.value) {
+                addNewInput();
+                currentRow = document.querySelector('.item-row:last-child');
+                dropdown = currentRow.querySelector('select[name="stock_id"]');
+                price = currentRow.querySelector('input[name="price"]');
+              }
+              
+              // Load the dropdown options if needed and select this item
+              loadHoneyStockDropdown(dropdown).then(() => {
+                // Set the dropdown to this value
+                dropdown.value = item.stock_id;
+                // Focus on the price input
+                price.focus();
+              });
+              
+              // Clear search and hide results
+              document.getElementById('stock-search').value = '';
+              resultsContainer.style.display = 'none';
+            });
+            
+            resultsContainer.appendChild(resultItem);
+          });
+          
+          resultsContainer.style.display = 'block';
+          
+        } catch (e) {
+          console.error("Error searching honey stock:", e);
+          resultsContainer.innerHTML = '<div class="stock-result-item">Error searching. Please try again.</div>';
+          resultsContainer.style.display = 'block';
+        }
+      }
+      
+      // The form submission is now handled by submitOrderForm in api.js
+    });
+  </script>
+</body>
+</html>

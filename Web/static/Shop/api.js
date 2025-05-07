@@ -52,13 +52,59 @@ async function submitForm(form) {
 
     if (res.ok) {
       resultDisplay.textContent = "Insert successful!";
+      resultDisplay.style.display = "block";
       form.reset();
     } else {
       const err = await res.text();
       resultDisplay.textContent = "Error: " + err;
+      resultDisplay.style.display = "block";
     }
   } catch (err) {
     resultDisplay.textContent = "Network error: " + err.message;
+    resultDisplay.style.display = "block";
+  }
+}
+
+// Function to extract user info from JWT token
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error("Error parsing JWT token:", e);
+    return {};
+  }
+}
+
+// Load user info from JWT token
+function loadUserFromToken() {
+  const token = getAuthToken();
+  if (!token) {
+    console.error("No authentication token found");
+    return;
+  }
+
+  try {
+    const userData = parseJwt(token);
+    
+    // Set user ID in hidden field
+    const userIdField = document.getElementById('user_id');
+    if (userIdField) {
+      userIdField.value = userData.user_id || userData.id || '';
+    }
+    
+    // Set user display name in disabled field
+    const userDisplay = document.getElementById('current_user');
+    if (userDisplay) {ing 
+      userDisplay.value = userData.name || userData.email || userData.user_id || 'Authenticated User';
+    }
+  } catch (e) {
+    console.error("Error loading user data from token:", e);
   }
 }
 
@@ -103,6 +149,50 @@ async function loadDropdown(tableName, dropdownId, idColumn, nameColumn) {
   }
 }
 
+// Function to load honey stock dropdown
+async function loadHoneyStockDropdown(dropdown) {
+  if (!dropdown) return;
+
+  try {
+    // Construct the API URL for honeystock table
+    let url = `${apiBase}/honeystock?select=stock_id,description,quantity`;
+
+    const res = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${getAuthToken()}`, // Use token from localStorage
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error ${res.status}`);
+    }
+
+    const items = await res.json();
+    
+    // Keep the first option (if any) and clear the rest
+    const firstOption = dropdown.querySelector('option:first-child');
+    dropdown.innerHTML = "";
+    if (firstOption) {
+      dropdown.appendChild(firstOption);
+    }
+
+    items.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item.stock_id;
+      option.textContent = `${item.stock_id} - ${item.is_sold} (${item.quantity} available)`;
+      dropdown.appendChild(option);
+    });
+    
+    // Return the promise that resolves when options are loaded
+    return Promise.resolve();
+  } catch (e) {
+    console.error("Error loading honey stock:", e);
+    dropdown.innerHTML = `<option value="">Error loading honey stock</option>`;
+    return Promise.reject(e);
+  }
+}
+
 // Generic form submission handler
 async function handleFormSubmit(e, formId, endpoint) {
   e.preventDefault();
@@ -134,13 +224,16 @@ async function handleFormSubmit(e, formId, endpoint) {
 
     if (res.ok) {
       resultDisplay.textContent = "Insert successful!";
+      resultDisplay.style.display = "block";
       form.reset();
     } else {
       const err = await res.text();
       resultDisplay.textContent = "Error: " + err;
+      resultDisplay.style.display = "block";
     }
   } catch (err) {
     resultDisplay.textContent = "Network error: " + err.message;
+    resultDisplay.style.display = "block";
   }
 }
 
@@ -152,25 +245,77 @@ function setupApiErrorHandling() {
       localStorage.removeItem('token');
       window.location.href = '/';
     }
-  });  // Add event listeners for the Role form and load dropdowns
-  function setupRoleForm() {
-    document
-      .getElementById("roleForm")
-      ?.addEventListener("submit", (e) =>
-        handleFormSubmit(e, "roleForm", "webrole")
-      );
+  });
+}
+
+async function submitOrderForm(form) {
+  const formData = new FormData(form);
+  const user_id = parseInt(formData.get("user_id"));
+  const customer_id = parseInt(formData.get("customer_id"));
+
+  // Collect items from the form
+  const itemRows = form.querySelectorAll(".item-row");
+  const items = Array.from(itemRows).map(row => {
+    const stockIdInput = row.querySelector('select[name="stock_id"]');
+    const priceInput = row.querySelector('input[name="price"]');
+    return {
+      stock_id: parseInt(stockIdInput.value),
+      price: parseFloat(priceInput.value),
+    };
+  }).filter(item => !isNaN(item.stock_id) && !isNaN(item.price));
+
+  const payload = {
+    user_id,
+    customer_id,
+    items
+  };
+
+  const resultDisplay = document.getElementById("result");
+
+  try {
+    const res = await fetch("https://app.kaminjitt.com/api/order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${getAuthToken()}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      resultDisplay.textContent = "Order submitted successfully!";
+      resultDisplay.style.display = "block";
+      form.reset();
+      
+      // Reset to just one empty item row
+      const inputsContainer = document.getElementById("inputs");
+      const itemRows = form.querySelectorAll(".item-row");
+      
+      // Remove all rows except the first one
+      for (let i = 1; i < itemRows.length; i++) {
+        itemRows[i].remove();
+      }
+      
+      // Clear the first row's inputs
+      if (itemRows.length > 0) {
+        const firstRow = itemRows[0];
+        firstRow.querySelector('select[name="stock_id"]').selectedIndex = 0;
+        firstRow.querySelector('input[name="price"]').value = '';
+        firstRow.querySelector('.remove-btn').disabled = true;
+      }
+      
+      // Reset user-related fields from token
+      loadUserFromToken();
+    } else {
+      const err = await res.text();
+      resultDisplay.textContent = "Error: " + err;
+      resultDisplay.style.display = "block";
+    }
+  } catch (err) {
+    resultDisplay.textContent = "Network error: " + err.message;
+    resultDisplay.style.display = "block";
   }
-  
-  // Initialize role form if it exists
-  setupRoleForm();
-  
-  // Load location dropdown if it exists
-  loadDropdown(
-    "geolocation",
-    "locationDropdown",
-    "location_id",
-    "location_name"
-  );
 }
 
 // Attach form handler dynamically
@@ -183,6 +328,14 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       submitForm(form);
+    });
+  }
+
+  const orderForm = document.getElementById("orderForm");
+  if (orderForm) {
+    orderForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitOrderForm(orderForm);
     });
   }
 });
