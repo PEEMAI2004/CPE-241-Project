@@ -187,7 +187,7 @@ async function loadHoneyStockDropdown(dropdown) {
 
   try {
     // Construct the API URL for honeystock table
-    let url = `${apiBase}/honeystock?select=stock_id,description,quantity`;
+    let url = `${apiBase}/honeystock?select=stock_id,is_sold,quantity&is_sold=eq.false`;
 
     const res = await fetch(url, {
       headers: {
@@ -212,7 +212,7 @@ async function loadHoneyStockDropdown(dropdown) {
     items.forEach((item) => {
       const option = document.createElement("option");
       option.value = item.stock_id;
-      option.textContent = `${item.stock_id} - ${item.is_sold} (${item.quantity} available)`;
+      option.textContent = `ID: ${item.stock_id} - ${item.is_sold ? 'Sold' : 'Available'} (${item.quantity} kg)`;
       dropdown.appendChild(option);
     });
     

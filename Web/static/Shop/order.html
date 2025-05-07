@@ -370,35 +370,52 @@
           items.forEach(item => {
             const resultItem = document.createElement('div');
             resultItem.className = 'stock-result-item';
-            resultItem.textContent = `ID: ${item.stock_id} (${item.quantity} available)`;
+            resultItem.textContent = `ID: ${item.stock_id} - ${item.is_sold ? 'Sold' : 'Available'} (${item.quantity} kg)`;
             
             // Add click handler to select this item
-            resultItem.addEventListener('click', () => {
-              // Find the currently active row or add a new one if needed
-              let currentRow = document.querySelector('.item-row:last-child');
-              let dropdown = currentRow.querySelector('select[name="stock_id"]');
-              let price = currentRow.querySelector('input[name="price"]');
-              
-              // If the current row already has a value, add a new row
-              if (dropdown.value) {
-                addNewInput();
-                currentRow = document.querySelector('.item-row:last-child');
-                dropdown = currentRow.querySelector('select[name="stock_id"]');
-                price = currentRow.querySelector('input[name="price"]');
-              }
-              
-              // Load the dropdown options if needed and select this item
-              loadHoneyStockDropdown(dropdown).then(() => {
-                // Set the dropdown to this value
-                dropdown.value = item.stock_id;
-                // Focus on the price input
-                price.focus();
+            if (!item.is_sold) {
+              resultItem.addEventListener('click', () => {
+                // Check if this stock_id is already selected in any dropdown
+                const existingDropdowns = document.querySelectorAll('select[name="stock_id"]');
+                const alreadySelected = Array.from(existingDropdowns).some(dropdown => dropdown.value == item.stock_id);
+                
+                if (alreadySelected) {
+                  // Indicate that item is already selected
+                  alert("This honey stock is already added to your order");
+                  return;
+                }
+                
+                // Find the currently active row or add a new one if needed
+                let currentRow = document.querySelector('.item-row:last-child');
+                let dropdown = currentRow.querySelector('select[name="stock_id"]');
+                let price = currentRow.querySelector('input[name="price"]');
+                
+                // If the current row already has a value, add a new row
+                if (dropdown.value) {
+                  addNewInput();
+                  currentRow = document.querySelector('.item-row:last-child');
+                  dropdown = currentRow.querySelector('select[name="stock_id"]');
+                  price = currentRow.querySelector('input[name="price"]');
+                }
+                
+                // Load the dropdown options if needed and select this item
+                loadHoneyStockDropdown(dropdown).then(() => {
+                  // Set the dropdown to this value
+                  dropdown.value = item.stock_id;
+                  // Focus on the price input
+                  price.focus();
+                });
+                
+                // Clear search and hide results
+                document.getElementById('stock-search').value = '';
+                resultsContainer.style.display = 'none';
               });
-              
-              // Clear search and hide results
-              document.getElementById('stock-search').value = '';
-              resultsContainer.style.display = 'none';
-            });
+            } else {
+              resultItem.style.color = '#999';
+              resultItem.style.fontStyle = 'italic';
+              resultItem.textContent += ' - Cannot select (already sold)';
+              resultItem.style.cursor = 'not-allowed';
+            }
             
             resultsContainer.appendChild(resultItem);
           });
