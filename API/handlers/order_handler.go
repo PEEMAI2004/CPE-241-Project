@@ -139,6 +139,16 @@ func (h *OrderHandler) validateOrderRequest(req *models.OrderRequest) error {
 		}
 	}
 
+	// Check if stock IDs are unique
+	stockIDMap := make(map[int]bool)
+	for _, item := range req.Items {
+		if _, exists := stockIDMap[item.StockID]; exists {
+			return fmt.Errorf("duplicate stock ID %d found in order", item.StockID)
+		}
+		stockIDMap[item.StockID] = true
+	}
+	
+
 	return nil
 }
 
