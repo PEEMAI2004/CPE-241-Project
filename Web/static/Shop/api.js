@@ -212,7 +212,7 @@ async function loadHoneyStockDropdown(dropdown) {
     items.forEach((item) => {
       const option = document.createElement("option");
       option.value = item.stock_id;
-      option.textContent = `ID: ${item.stock_id} - ${item.is_sold ? 'Sold' : 'Available'} (${item.quantity} kg)`;
+      option.textContent = `ID: ${item.stock_id} - ${item.is_sold ? 'Sold' : 'Available'} (${item.quantity % 1 === 0 ? item.quantity : item.quantity.toFixed(4)} kg)`;
       dropdown.appendChild(option);
     });
     
