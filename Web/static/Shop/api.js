@@ -81,6 +81,38 @@ function parseJwt(token) {
   }
 }
 
+// Function to get user name from user id
+function getUserName(userId) {
+  // Return a default value if no userId provided
+  if (!userId) return "Unknown User";
+  
+  // Make synchronous fetch and return static string while waiting
+  fetch(`${apiBase}/webuser?user_id=eq.${userId}`, {
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${getAuthToken()}`,
+    },
+  })
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  })
+  .then(users => {
+    if (users.length > 0) {
+      // Update the user display field if it exists
+      const userDisplay = document.getElementById('current_user');
+      if (userDisplay) {
+        userDisplay.value = `${users[0].user_id} - ${users[0].name || "Unknown User"}`;
+      }
+    }
+  })
+  .catch(e => {
+    console.error("Error fetching user name:", e);
+  });
+  
+  return "Loading...";  // Return immediate string while fetch happens in background
+}
+
 // Load user info from JWT token
 function loadUserFromToken() {
   const token = getAuthToken();
@@ -100,8 +132,8 @@ function loadUserFromToken() {
     
     // Set user display name in disabled field
     const userDisplay = document.getElementById('current_user');
-    if (userDisplay) {ing 
-      userDisplay.value = userData.name || userData.email || userData.user_id || 'Authenticated User';
+    if (userDisplay) {
+      userDisplay.value = getUserName(userData.user_id || '');
     }
   } catch (e) {
     console.error("Error loading user data from token:", e);
@@ -322,15 +354,21 @@ async function submitOrderForm(form) {
 document.addEventListener("DOMContentLoaded", () => {
   // Set up API error handling
   setupApiErrorHandling();
-  
-  const form = document.querySelector("form");
+});
+
+// Add event listeners for the User form
+if (document.getElementById("customerForm")) {
+  const form = document.getElementById("customerForm");;
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       submitForm(form);
     });
   }
+}
 
+// Add event listeners for the Order form
+if (document.getElementById("orderForm")) {
   const orderForm = document.getElementById("orderForm");
   if (orderForm) {
     orderForm.addEventListener("submit", (e) => {
@@ -338,4 +376,4 @@ document.addEventListener("DOMContentLoaded", () => {
       submitOrderForm(orderForm);
     });
   }
-});
+}
