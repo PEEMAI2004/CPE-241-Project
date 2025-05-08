@@ -183,10 +183,8 @@
   <form id="orderForm">
     <div class="form-header">
       <div class="id-field">
-        <label for="customer_id">Customer:</label>
-        <select id="customer_id" name="customer_id" required>
-          <option value="">-- Select Customer --</option>
-        </select>
+        <label for="customer_id">Customer ID:</label>
+        <input type="number" id="customer_id" name="customer_id" min="1" step="1" required placeholder="Enter customer ID">
       </div>
       <div class="id-field">
         <!-- Hidden field for user_id, will be filled from JWT -->
@@ -200,7 +198,7 @@
     
     <div class="search-container">
       <div class="search-results">
-        <input type="text" id="stock-search" placeholder="Search honey stock by ID or description..." class="search-input">
+        <input type="text" id="stock-search" placeholder="Search by Stock ID or Description" class="search-input">
         <div id="stock-results" class="stock-results"></div>
       </div>
     </div>
@@ -208,9 +206,7 @@
     <div id="inputs">
       <div class="item-row input-container">
         <div class="input-group">
-          <select name="stock_id" class="number-input" required>
-            <option value="">-- Select Honey Stock --</option>
-          </select>
+          <input type="number" name="stock_id" step="1" min="1" class="number-input" placeholder="Stock ID" required>
           <input type="number" name="price" step="0.01" min="0" class="price-input" placeholder="Sale Price" required>
         </div>
         <button type="button" class="remove-btn" disabled>✕</button>
@@ -233,10 +229,6 @@
       
       // Load user info from JWT token
       loadUserFromToken();
-      
-      // Load dropdown data
-      loadDropdown('customer', 'customer_id', 'customer_id', 'fullname');
-      loadHoneyStockDropdowns();
       
       // Set up the stock search functionality
       setupStockSearch();
@@ -270,12 +262,15 @@
         const inputGroup = document.createElement('div');
         inputGroup.className = 'input-group';
         
-        // Create select dropdown for stock_id
-        const stockSelect = document.createElement('select');
-        stockSelect.name = 'stock_id';
-        stockSelect.className = 'number-input';
-        stockSelect.required = true;
-        stockSelect.innerHTML = '<option value="">-- Select Honey Stock --</option>';
+        // Create input field for stock_id
+        const stockInput = document.createElement('input');
+        stockInput.type = 'number';
+        stockInput.name = 'stock_id';
+        stockInput.className = 'number-input';
+        stockInput.placeholder = 'Stock ID';
+        stockInput.step = '1';
+        stockInput.min = '1';
+        stockInput.required = true;
         
         const priceInput = document.createElement('input');
         priceInput.type = 'number';
@@ -292,21 +287,11 @@
         removeButton.textContent = '✕';
         removeButton.addEventListener('click', removeInput);
         
-        inputGroup.appendChild(stockSelect);
+        inputGroup.appendChild(stockInput);
         inputGroup.appendChild(priceInput);
         newInputContainer.appendChild(inputGroup);
         newInputContainer.appendChild(removeButton);
         inputsContainer.appendChild(newInputContainer);
-        
-        // Load honey stock data for the new dropdown
-        loadHoneyStockDropdown(stockSelect);
-      }
-      
-      function loadHoneyStockDropdowns() {
-        // Load all existing honey stock dropdowns
-        document.querySelectorAll('.item-row select[name="stock_id"]').forEach(dropdown => {
-          loadHoneyStockDropdown(dropdown);
-        });
       }
       
       function setupStockSearch() {
@@ -375,9 +360,9 @@
             // Add click handler to select this item
             if (!item.is_sold) {
               resultItem.addEventListener('click', () => {
-                // Check if this stock_id is already selected in any dropdown
-                const existingDropdowns = document.querySelectorAll('select[name="stock_id"]');
-                const alreadySelected = Array.from(existingDropdowns).some(dropdown => dropdown.value == item.stock_id);
+                // Check if this stock_id is already selected in any input field
+                const existingInputs = document.querySelectorAll('input[name="stock_id"]');
+                const alreadySelected = Array.from(existingInputs).some(input => input.value == item.stock_id);
                 
                 if (alreadySelected) {
                   // Indicate that item is already selected
@@ -387,24 +372,22 @@
                 
                 // Find the currently active row or add a new one if needed
                 let currentRow = document.querySelector('.item-row:last-child');
-                let dropdown = currentRow.querySelector('select[name="stock_id"]');
-                let price = currentRow.querySelector('input[name="price"]');
+                let stockInput = currentRow.querySelector('input[name="stock_id"]');
+                let priceInput = currentRow.querySelector('input[name="price"]');
                 
                 // If the current row already has a value, add a new row
-                if (dropdown.value) {
+                if (stockInput.value) {
                   addNewInput();
                   currentRow = document.querySelector('.item-row:last-child');
-                  dropdown = currentRow.querySelector('select[name="stock_id"]');
-                  price = currentRow.querySelector('input[name="price"]');
+                  stockInput = currentRow.querySelector('input[name="stock_id"]');
+                  priceInput = currentRow.querySelector('input[name="price"]');
                 }
                 
-                // Load the dropdown options if needed and select this item
-                loadHoneyStockDropdown(dropdown).then(() => {
-                  // Set the dropdown to this value
-                  dropdown.value = item.stock_id;
-                  // Focus on the price input
-                  price.focus();
-                });
+                // Set the input to this value
+                stockInput.value = item.stock_id;
+                
+                // Focus on the price input
+                priceInput.focus();
                 
                 // Clear search and hide results
                 document.getElementById('stock-search').value = '';
