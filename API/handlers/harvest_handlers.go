@@ -92,21 +92,47 @@ func (h *HarvestLogHandler) HandleHarvestLog(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	logEntry, err := utils.DecodeJSON[models.HarvestLog](r)
-	fmt.Println(err)
-	if err != nil {
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
-		return
-	}
+	// Check Content-Type header for array indication
+	contentType := r.Header.Get("Content-Type")
+	isArray := contentType == "application/json; type=array"
+	fmt.Println("Content-Type:", contentType, "Is Array:", isArray)
 
-	h.PrintHarvestLog(logEntry)
+	if isArray {
+		// Handle array of harvest logs
+		logEntries, err := utils.DecodeJSONArray[models.HarvestLog](r)
+		if err != nil {
+			http.Error(w, "Invalid JSON array format", http.StatusBadRequest)
+			return
+		}
 
-	// err = h.postgrestService.ForwardToPostgREST(logEntry, w, "/harvestlog")
-	StatusCode, body, err := h.postgrestService.ForwardToPostgREST(logEntry, "/harvestlog")
-	fmt.Println("StatusCode:", StatusCode, "Body:", string(body))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadGateway)
-		return
+		for _, logEntry := range logEntries {
+			h.PrintHarvestLog(&logEntry)
+			
+			StatusCode, body, err := h.postgrestService.ForwardToPostgREST(logEntry, "/harvestlog")
+			fmt.Println("StatusCode:", StatusCode, "Body:", string(body))
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadGateway)
+				return
+			}
+			h.TurnHarvest2Stock(&logEntry, 1)
+		}
+	} else {
+		// Handle single harvest log
+		logEntry, err := utils.DecodeJSON[models.HarvestLog](r)
+		fmt.Println(err)
+		if err != nil {
+			http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+			return
+		}
+
+		h.PrintHarvestLog(logEntry)
+
+		StatusCode, body, err := h.postgrestService.ForwardToPostgREST(logEntry, "/harvestlog")
+		fmt.Println("StatusCode:", StatusCode, "Body:", string(body))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+		h.TurnHarvest2Stock(logEntry, 1)
 	}
-	h.TurnHarvest2Stock(logEntry, 1)
 }
