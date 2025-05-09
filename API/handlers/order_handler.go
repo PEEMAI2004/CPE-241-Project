@@ -154,14 +154,26 @@ func (h *OrderHandler) validateOrderRequest(req *models.OrderRequest) error {
 
 // processOrder handles the order processing logic
 func (h *OrderHandler) processOrder(req *models.OrderRequest) (int, error) {
-	fmt.Printf("Processing order: UserID=%d, CustomerID=%d, Items=%d\n", 
-		req.UserID, req.CustomerID, len(req.Items))
-		
+	fmt.Printf("Processing order: UserID=%d, CustomerID=%d, Date==%s Items=%d\n", 
+		req.UserID, req.CustomerID, req.OrderDate, len(req.Items))
+	
+	// If req.OrderDate is empty, set it to the current date
+	if req.OrderDate == "" {
+		req.OrderDate = time.Now().Format("2006-01-02")
+	}
+
+	// If req.OrderStatus is empty, set it to "pending"
+	if req.OrderStatus == "" {
+		req.OrderStatus = "Pending"
+	}
+	
 	// 1. Create an entry in the orderlist table
 	orderList := &models.OrderList{
 		CustomerID: req.CustomerID,
 		UserID:     req.UserID,
-		OrderDate:  time.Now().Format("2006-01-02"),
+		OrderDate:  req.OrderDate,
+		OrderStatus: req.OrderStatus,
+		// OrderDate:  time.Now().Format("2006-01-02"),
 	}
 
 	statusCode, body, err := h.postgrestService.ForwardToPostgREST(orderList, "/orderlist")

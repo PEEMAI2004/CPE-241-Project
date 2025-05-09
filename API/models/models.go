@@ -26,6 +26,8 @@ type OrderRequest struct {
 	UserID     int         `json:"user_id"`
 	CustomerID int         `json:"customer_id"`
 	Items      []OrderItem `json:"items"`
+	OrderDate  string      `json:"order_date"`
+	OrderStatus string     `json:"status"`
 }
 
 // OrderItem represents an item in an order request
@@ -40,6 +42,7 @@ type OrderList struct {
 	CustomerID int    `json:"customer_id"`
 	UserID     int    `json:"user_id"`
 	OrderDate  string `json:"order_date"`
+	OrderStatus string     `json:"status"`
 }
 
 // OrderItemDB represents an entry in the orderitem table
