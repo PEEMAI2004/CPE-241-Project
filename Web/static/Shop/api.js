@@ -187,7 +187,7 @@ async function loadHoneyStockDropdown(dropdown) {
 
   try {
     // Construct the API URL for honeystock table
-    let url = `${apiBase}/honeystock?select=stock_id,is_sold,quantity&is_sold=eq.false`;
+    let url = `${apiBase}/honeystock?select=stock_id,is_sold,quantity&is_sold=eq.false&order=stock_id.asc&limit=1000`;
 
     const res = await fetch(url, {
       headers: {
@@ -288,7 +288,7 @@ async function submitOrderForm(form) {
   // Collect items from the form
   const itemRows = form.querySelectorAll(".item-row");
   const items = Array.from(itemRows).map(row => {
-    const stockIdInput = row.querySelector('select[name="stock_id"]');
+    const stockIdInput = row.querySelector('input[name="stock_id"]');
     const priceInput = row.querySelector('input[name="price"]');
     return {
       stock_id: parseInt(stockIdInput.value),
@@ -332,7 +332,7 @@ async function submitOrderForm(form) {
       // Clear the first row's inputs
       if (itemRows.length > 0) {
         const firstRow = itemRows[0];
-        firstRow.querySelector('select[name="stock_id"]').selectedIndex = 0;
+        firstRow.querySelector('input[name="stock_id"]').value = '';
         firstRow.querySelector('input[name="price"]').value = '';
         firstRow.querySelector('.remove-btn').disabled = true;
       }
