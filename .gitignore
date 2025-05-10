@@ -1,2 +1,6 @@
 */.env
 Data-Mock/*.json
+unsold_stocks_batches
+unsold_stocks_grouped_batches
+tempCodeRunnerFile.go
+*.log

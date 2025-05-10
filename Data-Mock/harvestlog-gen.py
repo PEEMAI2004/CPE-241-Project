@@ -69,5 +69,5 @@ def post_logs(filename=OUTPUT_FILE):
         print(f"❌ Exception during batch post: {str(e)}")
 
 # === Run ===
-generate_logs(count=100000)
+generate_logs(count=1)
 post_logs()
