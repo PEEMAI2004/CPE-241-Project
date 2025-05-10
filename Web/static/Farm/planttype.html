@@ -4,27 +4,110 @@
   <meta charset="UTF-8">
   <title>Add PlantType</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    label { display: block; margin-top: 10px; }
-    input, button { padding: 8px; margin-top: 5px; width: 100%; max-width: 300px; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      background-image: linear-gradient(135deg, #f5f7fa 0%, #f7f9fc 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .form-container {
+      background-color: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 15px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    input, textarea {
+      padding: 10px;
+      margin-top: 5px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      background-color: #fff;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #f6b913;
+      outline: none;
+      box-shadow: 0 0 3px rgba(246, 185, 19, 0.5);
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button[type="submit"] {
+      margin-top: 25px;
+      padding: 12px;
+      width: 100%;
+      background-color: #f6b913;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #e0a907;
+    }
+
+    #result {
+      margin-top: 20px;
+      text-align: center;
+      color: #27ae60;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Add PlantType</h2>
+  <div class="form-container">
+    <h2>Add PlantType</h2>
 
-  <form id="plantTypeForm" data-endpoint="planttype">
+    <form id="plantTypeForm" data-endpoint="planttype">
+      <label>Plant Type Name:
+        <input type="text" name="planttype_name" required>
+      </label>
 
-    <label>Plant Name: <input type="text" name="plant_name" required></label>
-    <label>Anti Oxidant: <input type="text" name="anti_oxidant" required></label>
-    <label>Pollen: <input type="text" name="pollen" required></label>
-    <label>Plant Description: <input type="text" name="plant_description" required></label>
-    <label>Flowering Season: <input type="text" name="flowering_season" required></label>
-    <label>Climate Zone: <input type="text" name="climatezone" required></label>
-    <button type="submit">Submit</button>
-  </form>
+      <label>Plant Type Description:
+        <textarea name="planttype_description" rows="3"></textarea>
+      </label>
 
-  <p id="result"></p>
+      <button type="submit">Submit</button>
+    </form>
+
+    <p id="result"></p>
+  </div>
 
   <script src="api.js"></script>
 </body>
