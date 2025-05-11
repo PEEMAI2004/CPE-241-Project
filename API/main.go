@@ -24,8 +24,8 @@ func enableCORS(next http.Handler) http.Handler {
 
 func main() {
 	// Load configuration (could be moved to a config package)
-	const postgrestURL = "https://postgrest.kaminjitt.com"
-	const jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBpX3VzZXIifQ.4TxmV2vnhZ5YTLw39wURDXQlzTHuAoaXHYhdTiqrNgY"
+	const postgrestURL = "http://192.168.1.225:4000"
+	const jwtToken = ""
 
 	// Initialize handlers with dependencies
 	harvestHandler := handlers.NewHarvestLogHandler(postgrestURL, jwtToken)
